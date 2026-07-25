@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Bestell-Automat – McDonald's Verteiler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --surface2: #1e1e1e;
+  --surface3: #282828;
+  --red: #DA291C;
+  --red-dark: #a81f15;
+  --red-light: #ff4d3d;
+  --yellow: #FFC72C;
+  --yellow-dark: #e0ab1f;
+  --yellow-light: #ffe066;
+  --text: #ffffff;
+  --text-secondary: #e0e0e0;
+  --muted: #a0a0a0;
+  --border: #2a2a2a;
+  --border-light: #3a3a3a;
+  --r: 18px;
+  --r-sm: 12px;
+  --r-lg: 24px;
+  --sb: env(safe-area-inset-bottom, 0px);
+  --st: env(safe-area-inset-top, 0px);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+  --shadow-yellow: 0 4px 20px rgba(255,199,44,0.3);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,sans-serif; }
+button { font-family:'Inter',sans-serif; border:none; cursor:pointer; -webkit-user-select:none; user-select:none; }
+button:focus-visible, input:focus-visible { outline:2px solid var(--yellow); outline-offset:2px; }
+#app { max-width:560px; margin:0 auto; min-height:100dvh; display:flex; flex-direction:column; }
+
+/* ---------- Topbar ---------- */
+#topbar {
+  position: sticky; top:0; z-index:30;
+  background: rgba(10,10,10,0.95); backdrop-filter: blur(20px);
+  border-bottom:1px solid var(--border);
+  padding: calc(14px + var(--st)) 16px 14px 16px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  box-shadow: var(--shadow-sm);
+}
+.icon-btn {
+  background: var(--surface2); color:var(--text); width:44px; height:44px;
+  border-radius: var(--r-sm); font-size:20px; display:flex; align-items:center; justify-content:center;
+  position:relative; flex-shrink:0; transition: all .2s ease; border:1px solid var(--border);
+}
+.icon-btn:hover { background: var(--surface3); border-color: var(--border-light); transform: scale(1.05); }
+.icon-btn:active { transform: scale(0.95); }
+.icon-btn.invisible { visibility:hidden; }
+.badge {
+  position:absolute; top:-6px; right:-6px; background:var(--red); color:white;
+  font-size:11px; font-weight:800; min-width:18px; height:18px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center; padding:0 5px; border:2px solid var(--bg);
+  box-shadow: 0 2px 8px rgba(218,41,28,0.4);
+}
+.dots { display:flex; align-items:center; gap:6px; }
+.dots .d { width:9px; height:9px; border-radius:50%; background:var(--border); transition: all .3s ease; }
+.dots .d.done { background: var(--yellow); box-shadow: 0 0 10px rgba(255,199,44,0.4); }
+.dots .d.now { background: var(--red); transform: scale(1.4); box-shadow: 0 0 12px rgba(218,41,28,0.5); }
+.dots .l { width:18px; height:2px; background:var(--border); }
+
+/* ---------- Screen area ---------- */
+#screen { flex:1; padding: 22px 18px calc(110px + var(--sb)) 18px; }
+
+.hero { text-align:center; margin: 30px 0 30px 0; }
+.hero .emoji { font-size:52px; margin-bottom:14px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
+.hero h1 { font-family:'Poppins',sans-serif; font-weight:800; font-size:26px; margin:0 0 10px 0; letter-spacing: -0.5px; }
+.hero p { color:var(--muted); font-size:15px; margin:0; }
+
+h1.left { font-family:'Poppins',sans-serif; font-weight:800; font-size:24px; margin:0 0 6px 0; letter-spacing: -0.5px; }
+p.sub-left { color:var(--muted); font-size:14px; margin:0 0 24px 0; }
+.hi { color: var(--yellow); }
+
+#nameInput {
+  display:block; width:100%; padding:20px; border-radius: var(--r);
+  border:2px solid var(--border); background:var(--surface); color:var(--text);
+  font-size:18px; text-align:center; font-weight:700; margin-bottom: 24px;
+  transition: all .2s ease; box-shadow: var(--shadow-sm);
+}
+#nameInput::placeholder { color: #666; font-weight:600; }
+#nameInput:focus { border-color:var(--yellow); outline:none; box-shadow: 0 0 20px rgba(255,199,44,0.2); }
+
+.tip {
+  background: var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:14px 16px; font-size:12.5px; color:var(--muted); display:flex; gap:10px; align-items:flex-start;
+}
+.tip .e { font-size:18px; flex-shrink:0; }
+
+/* ---------- Category grid ---------- */
+.cat-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.cat-tile {
+  background: var(--surface2); border:2px solid var(--border); border-radius: var(--r);
+  padding:32px 16px; display:flex; flex-direction:column; align-items:center; gap:14px;
+  transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative; overflow: hidden;
+  min-height: 140px;
+}
+.cat-tile::before {
+  content: ''; position: absolute; top:0; left:0; right:0; height:4px;
+  background: linear-gradient(90deg, var(--yellow), var(--yellow-dark));
+  opacity: 0; transition: opacity .25s ease;
+}
+.cat-tile:hover::before { opacity: 1; }
+.cat-tile:active { transform: scale(0.94); }
+.cat-tile:hover { 
+  border-color: var(--border-light); 
+  background: var(--surface3);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+.cat-tile.has { 
+  border-color: var(--yellow); 
+  background: var(--surface3);
+  box-shadow: var(--shadow-yellow);
+}
+.cat-tile.has::before { opacity: 1; }
+.cat-tile .ic { font-size:44px; filter: drop-shadow(0 3px 10px rgba(0,0,0,0.3)); }
+.cat-tile .lb { font-size:16px; font-weight:800; letter-spacing: -0.3px; color: var(--text); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+.cat-tile .ct { font-size:13px; color:var(--yellow); font-weight:800; height:18px; text-shadow: 0 2px 4px rgba(0,0,0,0.6); }
+
+/* ---------- Product grid ---------- */
+.prod-title { font-family:'Poppins',sans-serif; font-size:20px; font-weight:800; margin-bottom:16px; letter-spacing: -0.5px; }
+.prod-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.prod-card {
+  background: var(--surface); border:1px solid var(--border); border-radius: var(--r);
+  padding:16px; display:flex; flex-direction:column; gap:12px; position:relative;
+  transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  min-height: 130px;
+}
+.prod-card::before {
+  content: ''; position: absolute; bottom:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, var(--red), var(--red-light));
+  opacity: 0; transition: opacity .25s ease;
+}
+.prod-card:hover::before { opacity: 1; }
+.prod-card:hover { 
+  transform: translateY(-4px); 
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-light);
+}
+.prod-card .ic { font-size:32px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15)); }
+.prod-card h3 { font-size:15px; font-weight:700; margin:0; line-height:1.4; min-height:42px; letter-spacing: -0.2px; }
+.prod-card .qty {
+  position:absolute; top:-12px; right:-12px; background:var(--yellow); color:var(--red-dark);
+  font-size:13px; font-weight:800; min-width:28px; height:28px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center; padding:0 7px; border:2px solid var(--bg);
+  box-shadow: 0 3px 12px rgba(255,199,44,0.4);
+}
+.add-btn {
+  background: linear-gradient(180deg, var(--red) 0%, var(--red-dark) 100%);
+  color:white; font-weight:800; font-size:14px; padding:16px; border-radius: var(--r-sm); margin-top:auto;
+  box-shadow: 0 5px 0 #7d160f, 0 8px 20px rgba(218,41,28,0.3); 
+  transition: all .15s ease; position: relative; overflow: hidden;
+}
+.add-btn::after {
+  content: ''; position: absolute; top:0; left:-100%; width:100%; height:100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left .5s ease;
+}
+.add-btn:hover::after { left: 100%; }
+.add-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #7d160f, 0 4px 12px rgba(218,41,28,0.2); }
+.add-btn.menu-btn {
+  background: var(--surface2); color:var(--yellow); border:2px solid var(--yellow); 
+  box-shadow: 0 4px 0 var(--yellow-dark), 0 8px 20px rgba(255,199,44,0.2);
+}
+.add-btn.menu-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--yellow-dark); }
+.add-btn.flash { animation: flash .5s ease; }
+@keyframes flash { 0%{ background: var(--yellow); color:var(--red-dark); } 100%{} }
+
+/* ---------- Review ---------- */
+.review-item {
+  background: var(--surface); border:1px solid var(--border); border-radius:13px;
+  padding:14px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px;
+  transition: background .15s ease;
+}
+.review-item:hover { background: var(--surface2); }
+.review-item .nm { font-weight:700; font-size:15px; display:block; }
+.review-item .cf { color:var(--muted); font-size:13px; margin-top:4px; }
+.x-btn {
+  background: rgba(218,41,28,.18); color:var(--red); width:36px; height:36px;
+  border-radius:11px; font-weight:800; flex-shrink:0; font-size:16px;
+  transition: all .15s ease;
+}
+.x-btn:hover { background: rgba(218,41,28,.3); transform: scale(1.05); }
+.x-btn:active { transform: scale(0.95); }
+.empty { text-align:center; color:var(--muted); font-size:13.5px; padding:36px 20px; }
+.empty .e { font-size:34px; display:block; margin-bottom:10px; }
+
+/* ---------- Overview / person cards ---------- */
+.person-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px; margin-bottom:12px; }
+.person-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; }
+.person-head h3 { font-family:'Poppins',sans-serif; font-size:16px; margin:0; display:flex; align-items:center; gap:8px; }
+.pbadge { background:var(--yellow); color:var(--red-dark); font-size:11px; font-weight:800; padding:2px 9px; border-radius:10px; }
+.p-remove { background:rgba(218,41,28,.18); color:var(--red); font-size:12px; font-weight:700; padding:7px 11px; border-radius:9px; }
+.person-card ul { margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:6px; }
+.person-card li { font-size:13.5px; padding:9px 11px; background:var(--surface2); border-radius:9px; cursor:pointer; position:relative; transition: background .15s ease; }
+.person-card li:hover { background: #2a2a2a; }
+.person-card li .cf { color:var(--muted); font-size:12px; display:block; }
+.person-card li .item-remove { position:absolute; right:8px; top:50%; transform:translateY(-50%); color:var(--red); font-weight:800; font-size:14px; opacity:0.6; }
+.person-card li:hover .item-remove { opacity:1; }
+
+/* Menu items with components */
+.person-card li.menu-item {
+  padding: 12px 14px;
+  cursor: default;
+}
+.person-card li.menu-item:hover {
+  background: var(--surface2);
+}
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.menu-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+.menu-components {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.menu-comp {
+  background: rgba(255,199,44,0.1);
+  border: 1px solid rgba(255,199,44,0.3);
+  color: var(--yellow);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.menu-comp.burger-comp {
+  background: rgba(218,41,28,0.1);
+  border: 1px solid rgba(218,41,28,0.3);
+  color: var(--red);
+}
+.menu-comp:hover {
+  background: rgba(255,199,44,0.2);
+  border-color: var(--yellow);
+}
+.menu-comp.burger-comp:hover {
+  background: rgba(218,41,28,0.2);
+  border-color: var(--red);
+}
+.comp-remove {
+  font-weight: 800;
+  opacity: 0.7;
+}
+.menu-comp:hover .comp-remove {
+  opacity: 1;
+}
+
+/* ---------- Distribution ---------- */
+.distribute-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+  transition: all .2s ease;
+}
+.distribute-item.distributed {
+  border-color: var(--yellow);
+  background: rgba(255,199,44,0.05);
+}
+.dist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+.dist-menu {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--yellow);
+}
+.dist-parts {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.dist-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dist-select {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.dist-select:focus {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+.dist-status {
+  font-size: 12px;
+  color: var(--yellow);
+  font-weight: 700;
+}
+
+/* ---------- Bottom bar ---------- */
+#bottombar {
+  position:fixed; left:0; right:0; bottom:0; max-width:560px; margin:0 auto;
+  background: rgba(20,20,20,0.95); backdrop-filter: blur(20px);
+  border-top:1px solid var(--border);
+  padding:14px 20px calc(14px + var(--sb)) 20px; display:flex; align-items:center; gap:14px; z-index:25;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+}
+.bb-info { font-size:13px; color:var(--muted); font-weight:700; white-space:nowrap; flex-shrink:0; }
+.big-btn {
+  flex:1; font-weight:800; font-size:17px; padding:18px; border-radius: var(--r); text-align:center;
+  background: linear-gradient(180deg, var(--yellow) 0%, var(--yellow-dark) 100%); color:var(--red-dark);
+  box-shadow: 0 5px 0 #c99216, 0 8px 25px rgba(255,199,44,0.3); 
+  transition: all .2s ease; position: relative; overflow: hidden;
+}
+.big-btn::after {
+  content: ''; position: absolute; top:0; left:-100%; width:100%; height:100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left .5s ease;
+}
+.big-btn:hover::after { left: 100%; }
+.big-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #c99216, 0 4px 15px rgba(255,199,44,0.2); }
+.big-btn:disabled { opacity:.4; pointer-events:none; transform: none; box-shadow: none; }
+.big-btn.danger { 
+  background: linear-gradient(180deg, var(--red) 0%, var(--red-dark) 100%); color:white; 
+  box-shadow: 0 5px 0 #7d160f, 0 8px 25px rgba(218,41,28,0.3);
+}
+.big-btn.danger:active { transform: translateY(5px); box-shadow: 0 0 0 #7d160f, 0 4px 15px rgba(218,41,28,0.2); }
+.ghost-line-btn {
+  width:100%; background:var(--surface2); color:var(--text); font-weight:700; font-size:14px;
+  padding:14px; border-radius: var(--r); margin-top:4px; border:1px solid var(--border);
+  transition: all .2s ease;
+}
+.ghost-line-btn:hover { border-color: var(--yellow); color: var(--yellow); background: rgba(255,199,44,0.05); }
+
+/* ---------- Bottom sheet (configurator) ---------- */
+#sheetOverlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:40; opacity:0; pointer-events:none; transition:opacity .25s ease;
+}
+#sheetOverlay.show { opacity:1; pointer-events:auto; }
+#configSheet {
+  position:fixed; left:0; right:0; bottom:0; max-width:560px; margin:0 auto; background:var(--surface);
+  border-radius:24px 24px 0 0; padding:10px 20px calc(20px + var(--sb)) 20px; z-index:50;
+  transform:translateY(100%); transition: transform .3s cubic-bezier(.32,.72,0,1); max-height:85vh; overflow-y:auto;
+}
+#configSheet.show { transform: translateY(0); }
+.handle { width:42px; height:5px; background:var(--border); border-radius:3px; margin:8px auto 16px auto; }
+.cfg-title { font-family:'Poppins',sans-serif; font-weight:800; font-size:18px; margin-bottom:6px; }
+.cfg-group { margin-bottom:16px; }
+.cfg-label { font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); margin-bottom:9px; display:block; }
+.chips { display:flex; flex-wrap:wrap; gap:8px; }
+.chip { background:var(--surface2); border:1.5px solid var(--border); color:var(--text); padding:10px 15px; border-radius:22px; font-size:13px; font-weight:700; }
+.chip.sel { background:var(--yellow); border-color:var(--yellow); color:var(--red-dark); }
+
+/* ---------- Toast ---------- */
+#toast {
+  position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--text); color:var(--bg);
+  padding:11px 20px; border-radius:24px; font-size:13.5px; font-weight:800; opacity:0; pointer-events:none;
+  transition:all .25s ease; z-index:60; max-width:88%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+@media print {
+  #topbar, #bottombar, #sheetOverlay, #configSheet, #toast { display:none !important; }
+  body, #app { background:white; color:black; }
+  #screen { padding:0; }
+  .person-card { border:1px solid #ccc; break-inside:avoid; }
+  .person-card li { background:none; border-bottom:1px solid #eee; border-radius:0; }
+  .p-remove { display:none; }
+}
+@media (max-width:340px) { .cat-grid, .prod-grid { gap:8px; } }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="topbar">
+    <button class="icon-btn" id="backBtn" onclick="goBack()">←</button>
+    <div class="dots" id="dots"></div>
+    <button class="icon-btn" id="overviewBtn" onclick="openOverview()">📋<span class="badge" id="personBadge">0</span></button>
+  </div>
+
+  <div id="screen"></div>
+
+  <div id="bottombar"></div>
+
+  <div id="sheetOverlay" onclick="closeSheet()"></div>
+  <div id="configSheet">
+    <div class="handle"></div>
+    <div id="cfgContent"></div>
+  </div>
+
+  <div id="toast"></div>
+</div>
+
+<script>
+/* ================= Menu data (embedded, no fetch needed) ================= */
+const menuData = {
+  meta: { sizes: ["Normal", "Groß"] },
+  options: {
+    drinkOptions: ["Coca-Cola","Coca-Cola Zero","Fanta","Sprite","Sprite Zero","Lipton Ice Tea Pfirsich","Lipton Ice Tea Green","Almdudler","Orangensaft","Römerquelle Mineralwasser","Red Bull","Red Bull Sugarfree","Kein Getränk"],
+    sideOptions: ["Pommes Frites","Curly Fries","Snack Salat","Keine Beilage"],
+    sauceOptions: ["Ketchup","Mayonnaise","Barbecue Sauce","Süßsauer Sauce","Curry Sauce","Big Mac Sauce","Sour Cream Sauce","Honig Senf Sauce","Hot Devil Sauce","Keine Sauce"]
+  },
+  burgers: ["Hamburger","Cheeseburger","Double Cheeseburger","Bacon Double Cheeseburger","Big Mac","Hamburger Royal TS","Hamburger Royal mit Käse","Bacon Hamburger Royal mit Käse","Chickenburger","Double Chickenburger","McChicken","Filet-o-Fish","Doppel Filet-o-Fish","McPlant"],
+  menus: ["Big Mac Menü","Hamburger Royal TS Menü","Hamburger Royal Käse Menü","Bacon Hamburger Royal Käse Menü","McChicken Menü","Filet-o-Fish Menü","Chicken McNuggets Menü (6er)","Chicken McNuggets Menü (9er)","Cheeseburger Menü","Chickenburger Menü","McPlant Menü"],
+  chicken_snacks: ["Chicken McNuggets 4er","Chicken McNuggets 6er","Chicken McNuggets 9er","Chicken McNuggets 20er","Chickenburger","Double Chickenburger","McChicken"],
+  sides: ["Pommes Frites klein","Pommes Frites mittel","Pommes Frites groß","Curly Fries medium","Curly Fries large","Snack Salat"],
+  drinks: ["Coca-Cola","Coca-Cola Zero","Fanta","Fanta Zero","Sprite","Sprite Zero","Lipton Ice Tea Pfirsich","Lipton Ice Tea Green","Almdudler","Orangensaft","Römerquelle Mineralwasser prickelnd","Römerquelle Mineralwasser still","Red Bull","Red Bull Sugarfree"],
+  desserts: ["McFlurry Lotus Biscoff","McFlurry Oreo","McFlurry Schokodrops","McSundae ohne Topping","McSundae Schoko","McSundae Karamell","McSundae Himbeer","McSundae Mango-Passionsfrucht","Milchshake Erdbeer","Milchshake Banane","Milchshake Vanille","Apfeltasche","Schoko Donut","Eiskaffee"],
+  breakfast: ["Egg & Cheese McMuffin","Bacon & Egg McMuffin","McMuffin Beef and Egg","McMuffin Fresh Avocado","McMuffin Fresh Chicken","McToast Käse","McToast Schinken-Käse","McToast Bacon-Käse","Eierspeis","Wiener Frühstück"],
+  sauces: ["Ketchup","Mayonnaise","Barbecue Sauce","Süßsauer Sauce","Curry Sauce","Big Mac Sauce","Sour Cream Sauce","Honig Senf Sauce","Hot Devil Sauce"]
+};
+
+const CATS = {
+  burgers: { l: "Burger", i: "🍔" },
+  menus: { l: "Menüs", i: "🍽️" },
+  chicken_snacks: { l: "Chicken", i: "🍗" },
+  sides: { l: "Beilagen", i: "🍟" },
+  drinks: { l: "Getränke", i: "🥤" },
+  desserts: { l: "Desserts", i: "🍦" },
+  breakfast: { l: "Frühstück", i: "🥞" },
+  sauces: { l: "Saucen", i: "🧂" }
+};
+
+/* ================= State ================= */
+let persons = [];
+let currentPerson = null;
+let activeCategory = null;
+let screen = "name"; // name | category | products | review | overview | distribute
+let prevScreen = "name";
+let configSel = {};
+let configItemName = "";
+let configCategory = "";
+let distributeMode = false;
+let distributeItems = [];
+
+/* ================= Helpers ================= */
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove("show"), 1200);
+  if (navigator.vibrate) navigator.vibrate(12);
+}
+function itemConfigText(item) {
+  if (!item.config) return "";
+  const c = item.config;
+  const parts = [];
+  if (c.größe) parts.push(c.größe);
+  if (c.getränk && c.getränk !== "Kein Getränk") parts.push(c.getränk);
+  if (c.beilage && c.beilage !== "Keine Beilage") parts.push(c.beilage);
+  if (c.sauce && c.sauce !== "Keine Sauce") parts.push(c.sauce);
+  return parts.join(" · ");
+}
+
+/* ================= Navigation ================= */
+function go(next) {
+  if (screen !== "overview") prevScreen = screen;
+  screen = next;
+  render();
+  window.scrollTo(0, 0);
+}
+
+function goBack() {
+  if (screen === "overview") { screen = prevScreen; render(); return; }
+  if (screen === "category") { go("name"); return; }
+  if (screen === "products") { go("category"); return; }
+  if (screen === "review") { go("category"); return; }
+}
+
+function openOverview() { go("overview"); }
+
+/* ================= Actions ================= */
+function startPerson() {
+  const val = document.getElementById("nameInput").value.trim();
+  if (!val) return;
+  currentPerson = { name: val, items: [] };
+  go("category");
+}
+
+function selectCategory(key) {
+  activeCategory = key;
+  go("products");
+}
+
+function addSimpleItem(name) {
+  currentPerson.items.push({ name, category: activeCategory });
+  toast(`${name} hinzugefügt ✓`);
+  render();
+}
+
+function openConfigurator(name, category) {
+  configItemName = name;
+  configCategory = category;
+  configSel = {
+    größe: menuData.meta.sizes[0],
+    getränk: menuData.options.drinkOptions[0],
+    beilage: menuData.options.sideOptions[0],
+    sauce: menuData.options.sauceOptions[0]
+  };
+  renderConfigSheet();
+  document.getElementById("sheetOverlay").classList.add("show");
+  document.getElementById("configSheet").classList.add("show");
+}
+
+function closeSheet() {
+  document.getElementById("sheetOverlay").classList.remove("show");
+  document.getElementById("configSheet").classList.remove("show");
+}
+
+function selectChip(key, value) {
+  configSel[key] = value;
+  renderConfigSheet();
+}
+
+function confirmConfiguredItem() {
+  currentPerson.items.push({ name: configItemName, category: configCategory, config: { ...configSel } });
+  closeSheet();
+  toast(`${configItemName} hinzugefügt ✓`);
+  render();
+}
+
+function removeReviewItem(idx) {
+  currentPerson.items.splice(idx, 1);
+  render();
+}
+
+function finishPerson() {
+  if (!currentPerson || currentPerson.items.length === 0) return;
+  persons.push(currentPerson);
+  const name = currentPerson.name;
+  currentPerson = null;
+  document.getElementById("nameInput") && (document.getElementById("nameInput").value = "");
+  toast(`${name} fertig ✓ — nächster Gast?`);
+  go("name");
+}
+
+function removePerson(idx) {
+  persons.splice(idx, 1);
+  render();
+}
+
+function removePersonItem(personIdx, itemIdx) {
+  persons[personIdx].items.splice(itemIdx, 1);
+  if (persons[personIdx].items.length === 0) {
+    persons.splice(personIdx, 1);
+  }
+  render();
+}
+
+function removeMenuComponent(personIdx, itemIdx, component) {
+  const item = persons[personIdx].items[itemIdx];
+  if (!item.config) return;
+  
+  if (component === 'burger') {
+    // Remove the entire menu item
+    persons[personIdx].items.splice(itemIdx, 1);
+    if (persons[personIdx].items.length === 0) {
+      persons.splice(personIdx, 1);
+    }
+    toast(`${item.name} entfernt`);
+    render();
+    return;
+  }
+  
+  if (component === 'getränk') {
+    item.config.getränk = 'Kein Getränk';
+  } else if (component === 'beilage') {
+    item.config.beilage = 'Keine Beilage';
+  } else if (component === 'sauce') {
+    item.config.sauce = 'Keine Sauce';
+  }
+  
+  // Check if all components are removed, then remove the menu
+  const allRemoved = (
+    item.config.getränk === 'Kein Getränk' &&
+    item.config.beilage === 'Keine Beilage' &&
+    item.config.sauce === 'Keine Sauce'
+  );
+  
+  if (allRemoved) {
+    persons[personIdx].items.splice(itemIdx, 1);
+    if (persons[personIdx].items.length === 0) {
+      persons.splice(personIdx, 1);
+    }
+    toast(`${item.name} entfernt (alle Komponenten weg)`);
+  } else {
+    toast(`${component === 'getränk' ? 'Getränk' : component === 'beilage' ? 'Beilage' : 'Sauce'} entfernt`);
+  }
+  
+  render();
+}
+
+function startDistribute() {
+  distributeMode = true;
+  distributeItems = [];
+  persons.forEach((p, pIdx) => {
+    p.items.forEach((item, iIdx) => {
+      if (item.config) {
+        distributeItems.push({
+          personIdx: pIdx,
+          itemIdx: iIdx,
+          name: item.name,
+          config: item.config,
+          originalItem: item,
+          distributed: false
+        });
+      }
+    });
+  });
+  go("distribute");
+}
+
+function distributeItemToChild(distributeIdx, childName) {
+  const item = distributeItems[distributeIdx];
+  if (!childName) return;
+
+  const targetPerson = persons.find(p => p.name.toLowerCase() === childName.toLowerCase());
+  if (!targetPerson) {
+    toast("Kind nicht gefunden");
+    return;
+  }
+
+  item.distributed = true;
+  item.toChild = childName;
+
+  const parts = [];
+  if (item.config.getränk && item.config.getränk !== "Kein Getränk") {
+    targetPerson.items.push({ name: item.config.getränk, category: "drinks", fromMenu: item.name });
+  }
+  if (item.config.beilage && item.config.beilage !== "Keine Beilage") {
+    targetPerson.items.push({ name: item.config.beilage, category: "sides", fromMenu: item.name });
+  }
+  if (item.config.sauce && item.config.sauce !== "Keine Sauce") {
+    targetPerson.items.push({ name: item.config.sauce, category: "sauces", fromMenu: item.name });
+  }
+
+  toast(`${item.config.getränk !== "Kein Getränk" ? item.config.getränk + " & " : ""}${item.config.beilage !== "Keine Beilage" ? item.config.beilage : ""} an ${childName} verteilt`);
+  render();
+}
+
+function finishDistribution() {
+  distributeMode = false;
+  distributeItems = [];
+  go("overview");
+}
+
+function resetAll() {
+  if (!confirm("Wirklich alles löschen?")) return;
+  persons = [];
+  render();
+}
+
+function printList() { window.print(); }
+
+/* ================= Render ================= */
+function render() {
+  renderTopbar();
+  renderScreen();
+  renderBottombar();
+}
+
+function renderTopbar() {
+  document.getElementById("personBadge").textContent = persons.length;
+  document.getElementById("backBtn").classList.toggle("invisible", screen === "name");
+
+  const map = { name: "name", category: "cat", products: "cat", review: "review", overview: null };
+  const active = map[screen];
+  const order = ["name", "cat", "review"];
+  let html = "";
+  order.forEach((key, i) => {
+    if (i > 0) html += `<span class="l"></span>`;
+    let cls = "d";
+    if (active) {
+      const idx = order.indexOf(active);
+      if (key === active) cls += " now";
+      else if (order.indexOf(key) < idx) cls += " done";
+    }
+    html += `<span class="${cls}"></span>`;
+  });
+  document.getElementById("dots").innerHTML = html;
+}
+
+function renderScreen() {
+  const el = document.getElementById("screen");
+
+  if (screen === "name") {
+    el.innerHTML = `
+      <div class="hero">
+        <div class="emoji">👋</div>
+        <h1>Wer bestellt?</h1>
+        <p>Gib den Namen der Person ein, für die du jetzt auswählst.</p>
+      </div>
+      <input id="nameInput" type="text" placeholder="Name eingeben" autocomplete="off" value="">
+      <div class="tip"><span class="e">💡</span><span>Tipp: Für jede Person einmal durch die Kategorien gehen, dann "Fertig" drücken. Am Ende siehst du unter 📋 die komplette Verteil-Liste.</span></div>
+    `;
+    const input = document.getElementById("nameInput");
+    input.addEventListener("input", renderBottombar);
+    input.addEventListener("keydown", e => { if (e.key === "Enter") startPerson(); });
+    setTimeout(() => input.focus(), 50);
+  }
+
+  else if (screen === "category") {
+    let tiles = "";
+    Object.entries(CATS).forEach(([key, c]) => {
+      const count = currentPerson.items.filter(i => i.category === key).length;
+      tiles += `
+        <button class="cat-tile ${count > 0 ? "has" : ""}" onclick="selectCategory('${key}')">
+          <span class="ic">${c.i}</span>
+          <span class="lb">${c.l}</span>
+          <span class="ct">${count > 0 ? count + " gewählt" : ""}</span>
+        </button>`;
+    });
+    el.innerHTML = `
+      <h1 class="left">Was möchte <span class="hi">${esc(currentPerson.name)}</span>?</h1>
+      <p class="sub-left">Kategorie auswählen</p>
+      <div class="cat-grid">${tiles}</div>
+    `;
+  }
+
+  else if (screen === "products") {
+    const c = CATS[activeCategory];
+    const names = menuData[activeCategory];
+    let cards = "";
+    names.forEach(name => {
+      const isMenu = activeCategory === "menus";
+      const qty = currentPerson.items.filter(i => i.name === name).length;
+      cards += `
+        <div class="prod-card">
+          ${qty > 0 ? `<span class="qty">${qty}×</span>` : ""}
+          <div class="ic">${c.i}</div>
+          <h3>${esc(name)}</h3>
+          ${isMenu
+            ? `<button class="add-btn menu-btn" onclick="openConfigurator('${esc(name).replace(/'/g,"\\'")}', '${activeCategory}')">Konfigurieren</button>`
+            : `<button class="add-btn" onclick="addSimpleItem('${esc(name).replace(/'/g,"\\'")}')">+ Hinzufügen</button>`
+          }
+        </div>`;
+    });
+    el.innerHTML = `
+      <div class="prod-title">${c.i} ${c.l}</div>
+      <div class="prod-grid">${cards}</div>
+    `;
+  }
+
+  else if (screen === "review") {
+    let list = "";
+    if (currentPerson.items.length === 0) {
+      list = `<div class="empty"><span class="e">🧾</span>Noch keine Produkte gewählt.</div>`;
+    } else {
+      currentPerson.items.forEach((item, idx) => {
+        list += `
+          <div class="review-item">
+            <div><span class="nm">${esc(item.name)}</span>${item.config ? `<span class="cf">${esc(itemConfigText(item))}</span>` : ""}</div>
+            <button class="x-btn" onclick="removeReviewItem(${idx})">✕</button>
+          </div>`;
+      });
+    }
+    el.innerHTML = `
+      <h1 class="left"><span class="hi">${esc(currentPerson.name)}</span>s Bestellung</h1>
+      <p class="sub-left">Alles korrekt? Du kannst noch Artikel entfernen.</p>
+      ${list}
+      <button class="ghost-line-btn" onclick="go('category')">+ Weitere Produkte hinzufügen</button>
+    `;
+  }
+
+  else if (screen === "overview") {
+    let cards = "";
+    if (persons.length === 0) {
+      cards = `<div class="empty"><span class="e">📋</span>Noch keine Bestellung abgeschlossen.</div>`;
+    } else {
+      persons.forEach((p, pIdx) => {
+        let items = "";
+        p.items.forEach((item, iIdx) => {
+          if (item.config) {
+            // Menu item - show components with individual remove buttons
+            const components = [];
+            // Add burger as first component
+            components.push(`<span class="menu-comp burger-comp" onclick="event.stopPropagation(); removeMenuComponent(${pIdx}, ${iIdx}, 'burger')">🍔 ${esc(item.name)} <span class="comp-remove">✕</span></span>`);
+            
+            if (item.config.getränk && item.config.getränk !== "Kein Getränk") {
+              components.push(`<span class="menu-comp" onclick="event.stopPropagation(); removeMenuComponent(${pIdx}, ${iIdx}, 'getränk')">🥤 ${esc(item.config.getränk)} <span class="comp-remove">✕</span></span>`);
+            }
+            if (item.config.beilage && item.config.beilage !== "Keine Beilage") {
+              components.push(`<span class="menu-comp" onclick="event.stopPropagation(); removeMenuComponent(${pIdx}, ${iIdx}, 'beilage')">🍟 ${esc(item.config.beilage)} <span class="comp-remove">✕</span></span>`);
+            }
+            if (item.config.sauce && item.config.sauce !== "Keine Sauce") {
+              components.push(`<span class="menu-comp" onclick="event.stopPropagation(); removeMenuComponent(${pIdx}, ${iIdx}, 'sauce')">🧂 ${esc(item.config.sauce)} <span class="comp-remove">✕</span></span>`);
+            }
+            
+            items += `<li class="menu-item">
+              <div class="menu-components">${components.join('')}</div>
+            </li>`;
+          } else {
+            // Regular item
+            items += `<li onclick="removePersonItem(${pIdx}, ${iIdx})">${esc(item.name)} <span class="item-remove">✕</span></li>`;
+          }
+        });
+        cards += `
+          <div class="person-card">
+            <div class="person-head">
+              <h3>${esc(p.name)} <span class="pbadge">${p.items.length}</span></h3>
+              <button class="p-remove" onclick="removePerson(${pIdx})">Entfernen</button>
+            </div>
+            <ul>${items}</ul>
+          </div>`;
+      });
+    }
+    el.innerHTML = `
+      <h1 class="left">Übersicht</h1>
+      <p class="sub-left">Alle abgeschlossenen Bestellungen</p>
+      ${cards}
+    `;
+  }
+
+  else if (screen === "distribute") {
+    let itemsHtml = "";
+    const hasMenus = distributeItems.length > 0;
+    
+    if (!hasMenus) {
+      itemsHtml = `<div class="empty"><span class="e">🍽️</span>Keine Menüs zum Verteilen gefunden.</div>`;
+    } else {
+      distributeItems.forEach((item, idx) => {
+        const childOptions = persons.map(p => 
+          `<option value="${esc(p.name)}" ${item.toChild === p.name ? "selected" : ""}>${esc(p.name)}</option>`
+        ).join("");
+        
+        const availableParts = [];
+        if (item.config.getränk && item.config.getränk !== "Kein Getränk") availableParts.push(item.config.getränk);
+        if (item.config.beilage && item.config.beilage !== "Keine Beilage") availableParts.push(item.config.beilage);
+        if (item.config.sauce && item.config.sauce !== "Keine Sauce") availableParts.push(item.config.sauce);
+        
+        itemsHtml += `
+          <div class="distribute-item ${item.distributed ? "distributed" : ""}">
+            <div class="dist-header">
+              <span class="dist-menu">${esc(item.name)}</span>
+              <span class="dist-parts">${availableParts.join(" + ")}</span>
+            </div>
+            <div class="dist-controls">
+              <select class="dist-select" onchange="distributeItemToChild(${idx}, this.value)">
+                <option value="">Wem geben?</option>
+                ${childOptions}
+              </select>
+              ${item.distributed ? `<span class="dist-status">✓ Verteilt an ${esc(item.toChild)}</span>` : ""}
+            </div>
+          </div>`;
+      });
+    }
+    
+    el.innerHTML = `
+      <h1 class="left">Menü-Verteilung</h1>
+      <p class="sub-left">Verteile Pommes, Getränke & Saucen an die Kinder</p>
+      ${itemsHtml}
+    `;
+  }
+}
+
+function renderBottombar() {
+  const bar = document.getElementById("bottombar");
+
+  if (screen === "name") {
+    const val = document.getElementById("nameInput") ? document.getElementById("nameInput").value.trim() : "";
+    bar.innerHTML = `<button class="big-btn" ${val ? "" : "disabled"} onclick="startPerson()">Los geht's 🚀</button>`;
+  }
+  else if (screen === "category") {
+    const count = currentPerson.items.length;
+    bar.innerHTML = `
+      ${count > 0 ? `<span class="bb-info">${count} Artikel</span>` : ""}
+      <button class="big-btn" ${count > 0 ? "" : "disabled"} onclick="go('review')">${count > 0 ? "Fertig — prüfen ✅" : "Kategorie wählen"}</button>
+    `;
+  }
+  else if (screen === "products") {
+    const count = currentPerson.items.length;
+    bar.innerHTML = `
+      ${count > 0 ? `<span class="bb-info">${count} Artikel</span>` : ""}
+      <button class="big-btn" ${count > 0 ? "" : "disabled"} onclick="go('review')">${count > 0 ? "Fertig — prüfen ✅" : "Erst Artikel wählen"}</button>
+    `;
+  }
+  else if (screen === "review") {
+    const count = currentPerson.items.length;
+    bar.innerHTML = `<button class="big-btn" ${count > 0 ? "" : "disabled"} onclick="finishPerson()">Bestellung abschließen 🎉</button>`;
+  }
+  else if (screen === "overview") {
+    const hasMenus = persons.some(p => p.items.some(i => i.config));
+    bar.innerHTML = `
+      ${hasMenus ? `<button class="big-btn" style="flex:1; background:var(--surface2); color:var(--yellow); border:1.5px solid var(--yellow); box-shadow:none;" onclick="startDistribute()">🍽️ Verteilen</button>` : ""}
+      <button class="big-btn" style="flex:0 0 auto; padding:16px 18px;" onclick="printList()">🖨️</button>
+      <button class="big-btn danger" onclick="resetAll()">Alles löschen</button>
+    `;
+  }
+  else if (screen === "distribute") {
+    bar.innerHTML = `
+      <button class="big-btn" onclick="finishDistribution()">Fertig ✓</button>
+    `;
+  }
+}
+
+function renderConfigSheet() {
+  const groups = [
+    ["größe", "Größe", menuData.meta.sizes],
+    ["getränk", "Getränk", menuData.options.drinkOptions],
+    ["beilage", "Beilage", menuData.options.sideOptions],
+    ["sauce", "Sauce", menuData.options.sauceOptions]
+  ];
+  let html = `<div class="cfg-title">${esc(configItemName)}</div>`;
+  groups.forEach(([key, label, options]) => {
+    let chips = "";
+    options.forEach(opt => {
+      const sel = configSel[key] === opt;
+      chips += `<button class="chip ${sel ? "sel" : ""}" onclick="selectChip('${key}', '${esc(opt).replace(/'/g,"\\'")}')">${esc(opt)}</button>`;
+    });
+    html += `<div class="cfg-group"><span class="cfg-label">${label}</span><div class="chips">${chips}</div></div>`;
+  });
+  html += `<button class="big-btn" style="width:100%; margin-top:6px;" onclick="confirmConfiguredItem()">Zum Warenkorb hinzufügen ✓</button>`;
+  document.getElementById("cfgContent").innerHTML = html;
+}
+
+/* ================= Init ================= */
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "sizes": ["Normal", "Groß"],
+    "drinkSizes": ["Klein", "Mittel", "Groß"],
+    "sideSizes": ["Klein", "Mittel", "Groß"]
+  },
+  "options": {
+    "drinkOptions": ["Coca-Cola", "Coca-Cola Zero", "Fanta", "Sprite", "Sprite Zero", "Lipton Ice Tea Pfirsich", "Lipton Ice Tea Green", "Almdudler", "Orangensaft", "Römerquelle Mineralwasser", "Red Bull", "Red Bull Sugarfree", "Kein Getränk"],
+    "sideOptions": ["Pommes Frites", "Curly Fries", "Snack Salat", "Keine Beilage"],
+    "sauceOptions": ["Ketchup", "Mayonnaise", "Barbecue Sauce", "Süßsauer Sauce", "Curry Sauce", "Big Mac Sauce", "Sour Cream Sauce", "Honig Senf Sauce", "Hot Devil Sauce", "Keine Sauce"]
+  },
+  "burgers": [
+    "Hamburger", "Cheeseburger", "Double Cheeseburger", "Bacon Double Cheeseburger",
+    "Big Mac", "Hamburger Royal TS", "Hamburger Royal mit Käse", "Bacon Hamburger Royal mit Käse",
+    "Chickenburger", "Double Chickenburger", "McChicken",
+    "Filet-o-Fish", "Doppel Filet-o-Fish", "McPlant"
+  ],
+  "menus": [
+    "Big Mac Menü", "Hamburger Royal TS Menü", "Hamburger Royal Käse Menü", "Bacon Hamburger Royal Käse Menü",
+    "McChicken Menü", "Filet-o-Fish Menü", "Chicken McNuggets Menü (6er)", "Chicken McNuggets Menü (9er)",
+    "Cheeseburger Menü", "Chickenburger Menü", "McPlant Menü"
+  ],
+  "chicken_snacks": [
+    "Chicken McNuggets 4er", "Chicken McNuggets 6er", "Chicken McNuggets 9er", "Chicken McNuggets 20er",
+    "Chickenburger", "Double Chickenburger", "McChicken"
+  ],
+  "sides": [
+    "Pommes Frites klein", "Pommes Frites mittel", "Pommes Frites groß",
+    "Curly Fries medium", "Curly Fries large", "Snack Salat"
+  ],
+  "drinks": [
+    "Coca-Cola", "Coca-Cola Zero", "Fanta", "Fanta Zero", "Sprite", "Sprite Zero",
+    "Lipton Ice Tea Pfirsich", "Lipton Ice Tea Green", "Almdudler",
+    "Orangensaft", "Römerquelle Mineralwasser prickelnd", "Römerquelle Mineralwasser still",
+    "Red Bull", "Red Bull Sugarfree"
+  ],
+  "desserts": [
+    "McFlurry Lotus Biscoff", "McFlurry Oreo", "McFlurry Schokodrops",
+    "McSundae ohne Topping", "McSundae Schoko", "McSundae Karamell", "McSundae Himbeer", "McSundae Mango-Passionsfrucht",
+    "Milchshake Erdbeer", "Milchshake Banane", "Milchshake Vanille",
+    "Apfeltasche", "Schoko Donut", "Eiskaffee"
+  ],
+  "breakfast": [
+    "Egg & Cheese McMuffin", "Bacon & Egg McMuffin", "McMuffin Beef and Egg",
+    "McMuffin Fresh Avocado", "McMuffin Fresh Chicken", "McToast Käse",
+    "McToast Schinken-Käse", "McToast Bacon-Käse", "Eierspeis", "Wiener Frühstück"
+  ],
+  "sauces": [
+    "Ketchup", "Mayonnaise", "Barbecue Sauce", "Süßsauer Sauce", "Curry Sauce",
+    "Big Mac Sauce", "Sour Cream Sauce", "Honig Senf Sauce", "Hot Devil Sauce"
+  ]
+}
